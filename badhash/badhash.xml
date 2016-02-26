@@ -4,7 +4,7 @@
   <!--<spirit:library>example_lib</spirit:library>-->
   <spirit:name>badhash</spirit:name>
   <spirit:version>1.0.0</spirit:version>
-  <spirit:description>This component applies the excutes the badhash algorithm.</spirit:description>
+  <spirit:description>This component executes the badhash algorithm.</spirit:description>
 
   <spirit:memoryMaps>
     <spirit:memoryMap>
@@ -59,7 +59,7 @@
             <spirit:access>read-only</spirit:access>
           </spirit:field>
         </spirit:register>
-ee
+
       </spirit:addressBlock>
     </spirit:memoryMap>
   </spirit:memoryMaps>
