@@ -7,6 +7,13 @@ object AXI4LiteBusWidth {
   val AXI64 = 64
 }
 
+object AXI4LiteWResp {
+  val OKAY = UInt(0, 2)
+  val EXOKAY = UInt(1, 2)
+  val SLVERR = UInt(2, 2)
+  val DECERR = UInt(3, 2)
+}
+
 class PeripheralSlaveIf extends Bundle {
     val in = Decoupled(new Bundle {
       val wdata = UInt(INPUT, AXI4LiteBusWidth.AXI32)
@@ -126,16 +133,15 @@ class AXI4LiteSlave extends Module {
   /* handle the write response */
 
   val wresp_valid = Reg(init = Bool(false))
-  val wresp = Reg(init = UInt(0, 2))
   io.axi.bchannel.valid := wresp_valid
-  io.axi.bchannel.bits.bresp := wresp
+  io.axi.bchannel.bits.bresp := AXI4LiteWResp.OKAY
 
   when (io.axi.wchannel.valid && io.axi.wchannel.ready) {
-    wresp := Bool(true)
+    wresp_valid := Bool(true)
   }
 
   when (io.axi.bchannel.valid && io.axi.bchannel.ready) {
-    wresp := Bool(false)
+    wresp_valid := Bool(false)
   }
 
   /* forward read channel */
@@ -166,7 +172,7 @@ class AXI4LiteSlave extends Module {
   when (addr === UInt(0x00)) {
     io.slaveA.in.bits.wdata := io.axi.wchannel.bits.wdata
     io.slaveA.in.valid := io.axi.wchannel.valid
-    io.axi.wchannel.ready := io.slaveA.in.ready && wvalid && !wresp
+    io.axi.wchannel.ready := io.slaveA.in.ready && wvalid && !wresp_valid
 
     io.slaveB.in.valid := Bool(false)
     io.slaveB.in.bits.wdata := UInt(0x00)
@@ -174,7 +180,7 @@ class AXI4LiteSlave extends Module {
   } .elsewhen (addr === UInt(0x04)) {
     io.slaveB.in.bits.wdata := io.axi.wchannel.bits.wdata
     io.slaveB.in.valid := io.axi.wchannel.valid
-    io.axi.wchannel.ready := io.slaveB.in.ready && wvalid && !wresp
+    io.axi.wchannel.ready := io.slaveB.in.ready && wvalid && !wresp_valid
 
     io.slaveA.in.valid := Bool(false)
     io.slaveA.in.bits.wdata := UInt(0x00)

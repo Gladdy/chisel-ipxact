@@ -39,40 +39,36 @@ class IPBlockTest(c: IPBlock) extends Tester(c) {
     step(1)
     poke(c.io.rchannel.ready, false)
     expect(peek(c.io.archannel.ready) == 1, "raddr channel ready")
-   }
+  }
+
+  def write(addr: Int, data: Int) = {
+    poke(c.io.awchannel.valid, true)
+    poke(c.io.awchannel.bits.awaddr, addr)
+    poke(c.io.awchannel.bits.awprot, 0x00)
+    while(peek(c.io.awchannel.ready) == 0)
+      step(1)
+    poke(c.io.wchannel.valid, true)
+    poke(c.io.wchannel.bits.wdata, data)
+    while(peek(c.io.wchannel.ready) == 0)
+      step(1)
+    step(1) // ensure the wchannel valid stays for at least one clock
+    poke(c.io.wchannel.valid, false)
+    // check that the write response is ready
+    while(peek(c.io.bchannel.valid) == 0)
+      step(1)
+    expect(peek(c.io.bchannel.valid) == 1, "write response valid")
+    expect(peek(c.io.bchannel.bits.bresp) == 0x00, "write response value ok")
+    poke(c.io.bchannel.ready, true)
+    step(1)
+    expect(peek(c.io.bchannel.valid) == 0, "write response end")
+    // test that the data have been written correctly
+    read(addr, data)
+  }
 
   println("Test start")
-  println("Test read")
-  // test read
   read(0x00, 0x7eadbeef)
   read(0x04, 0x0000beef)
-
-  step(1)
-  // test write
-  poke(c.io.awchannel.valid, true)
-  poke(c.io.awchannel.bits.awaddr, 0x04)
-  poke(c.io.awchannel.bits.awprot, 0x04)
-  while(peek(c.io.awchannel.ready) == 0)
-    step(1)
-  poke(c.io.wchannel.valid, true)
-  poke(c.io.wchannel.bits.wdata, 0x7fffffff)
-  while(peek(c.io.wchannel.ready) == 0)
-    step(1)
-  step(1) // ensure the wchannel valid stays for at least one clock
-  poke(c.io.wchannel.valid, false)
-  // check that the write response is ready
-  while(peek(c.io.bchannel.valid) == 0)
-    step(1)
-  expect(peek(c.io.bchannel.valid) == 1, "write response valid")
-  expect(peek(c.io.bchannel.bits.bresp) == 0x00, "write response value ok")
-  poke(c.io.bchannel.ready, true)
-  step(1)
-  expect(peek(c.io.bchannel.valid) == 0, "write response end")
-  // check the write
-  read(0x04, 0x7fffffff)
-
-  // while (peek(c.io.archannel.ready) == 0)
-  //   step(1)
+  write(0x04, 0x7fffffff)
   println("Test end")
 
 }
