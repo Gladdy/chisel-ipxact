@@ -88,14 +88,6 @@ class IPBlock extends Module {
 
 }
 
-// object Testbench {
-
-//   def main(args: Array[String]): Unit = {
-//     val testArgs = args.slice(1, args.length)
-//     chiselMainTest(testArgs, () => Module(new AXI4LiteSlave
-// )) { c => new Axi4LiteTest(c)}
-//   }
-// }
 object Testbench {
 
   def main(args: Array[String]): Unit = {
