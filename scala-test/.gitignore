@@ -1,0 +1,7 @@
+project
+target
+build
+*.cpp
+*.o
+*.h
+BadHash
