@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<spirit:component xmlns:spirit="http://www.spiritconsortium.org/XMLSchema/SPIRIT/1.5" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.spiritconsortium.org/XMLSchema/SPIRIT/1.5 http://www.spiritconsortium.org/XMLSchema/SPIRIT/1.5/index.xsd">
+  <spirit:vendor>uk.ac.cam.cl</spirit:vendor>
+  <!--<spirit:library>example_lib</spirit:library>-->
+  <spirit:name>badhash</spirit:name>
+  <spirit:version>1.0.0</spirit:version>
+  <spirit:description>This component executes the badhash algorithm.</spirit:description>
+
+  <spirit:memoryMaps>
+    <spirit:memoryMap>
+      <spirit:name>badhash_register_map</spirit:name>
+      <spirit:displayName>Badhash Registers</spirit:displayName>
+      <spirit:addressBlock>
+        <spirit:name>badhash_address_block</spirit:name>
+        <spirit:displayName>Badhash Address Block</spirit:displayName>
+        <spirit:description>This Address block contains all the registers needed to interact with the badhash device.</spirit:description>
+        <spirit:baseAddress>0x0</spirit:baseAddress>
+        <spirit:range>0x8</spirit:range>
+        <spirit:width>32</spirit:width>
+        <spirit:usage>register</spirit:usage>
+        <spirit:volatile>true</spirit:volatile>
+
+        <spirit:register>
+          <spirit:name>input_reg</spirit:name>
+          <spirit:displayName>Input value</spirit:displayName>
+          <spirit:description>The input value which will be hashed.</spirit:description>
+          <spirit:addressOffset>0x0</spirit:addressOffset>
+          <spirit:size>32</spirit:size>
+          <spirit:volatile>false</spirit:volatile>
+          <spirit:access>write-only</spirit:access>
+          <spirit:reset>
+            <spirit:value>0x0</spirit:value>
+            <spirit:mask>0xffffffff</spirit:mask>
+          </spirit:reset>
+          <spirit:field>
+            <spirit:name>data</spirit:name>
+            <spirit:bitOffset>0</spirit:bitOffset>
+            <spirit:bitWidth>32</spirit:bitWidth>
+            <spirit:access>write-only</spirit:access>
+          </spirit:field>
+        </spirit:register>
+
+        <spirit:register>
+          <spirit:name>output_reg</spirit:name>
+          <spirit:displayName>Output value</spirit:displayName>
+          <spirit:description>The output value equal to the badhash of the input.</spirit:description>
+          <spirit:addressOffset>0x4</spirit:addressOffset>
+          <spirit:size>32</spirit:size>
+          <spirit:volatile>true</spirit:volatile>
+          <spirit:access>read-only</spirit:access>
+          <spirit:reset>
+            <spirit:value>0x0</spirit:value>
+            <spirit:mask>0xffffffff</spirit:mask>
+          </spirit:reset>
+          <spirit:field>
+            <spirit:name>data</spirit:name>
+            <spirit:bitOffset>0</spirit:bitOffset>
+            <spirit:bitWidth>32</spirit:bitWidth>
+            <spirit:access>read-only</spirit:access>
+          </spirit:field>
+        </spirit:register>
+
+      </spirit:addressBlock>
+    </spirit:memoryMap>
+  </spirit:memoryMaps>
+
+  <spirit:model>
+    <spirit:views>
+      <spirit:view>
+        <spirit:name>flat</spirit:name>
+        <spirit:envIdentifier>::</spirit:envIdentifier>
+      </spirit:view>
+    </spirit:views>
+  </spirit:model>
+
+</spirit:component>
