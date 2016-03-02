@@ -1,7 +1,6 @@
-project
-target
-build
+project/*
+target/*
+build/*
 *.cpp
 *.o
 *.h
-BadHash

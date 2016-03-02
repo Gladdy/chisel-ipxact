@@ -3,6 +3,3 @@
 *.so
 *.pyc
 */__pycache__/*
-*/project/*
-*/target/*
-*/build/*
