@@ -3,3 +3,7 @@
 *.so
 *.pyc
 */__pycache__/*
+
+# emacs ignores
+*~
+\#*\#
