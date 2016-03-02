@@ -48,6 +48,7 @@ class IPBlockTest(c: IPBlock) extends Tester(c) {
   read(0x04, 0x0000beef)
 
   step(1)
+  /*
   // test write
   poke(c.io.awchannel.valid, true)
   poke(c.io.awchannel.bits.awaddr, 0x04)
@@ -70,7 +71,7 @@ class IPBlockTest(c: IPBlock) extends Tester(c) {
   expect(peek(c.io.bchannel.valid) == 0, "write response end")
   // check the write
   read(0x04, 0x7fffffff)
-
+  */
   // while (peek(c.io.archannel.ready) == 0)
   //   step(1)
   println("Test end")
