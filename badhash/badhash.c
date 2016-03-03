@@ -2,6 +2,10 @@
 #include <stdint.h>
 #include <stdio.h>
 
+// https://github.com/andrewscull/ipyxact
+// python gen_c_header.py badhash.xml -o badhash.h
+#include "badhash.h"
+
 uint32_t badhash(uint32_t x) {
   x ^= 0xD171A769;
   return
@@ -15,11 +19,19 @@ uint32_t badhash(uint32_t x) {
     ((x >>  1) & 0x60000000);
 }
 
-int main(void) {
-  char test[4] = "P35";
+int main(int argc, char** argv) {
   // htonl/ntohl needed to sort byte order problems
-  uint32_t hash = ntohl(badhash(htonl(*(uint32_t*)&test)));
-  printf("%s\n", (char*)&hash);
+  char test[4] = "P35";
+  uint32_t hash;
+
+  // Run it in software
+  hash = ntohl(badhash(htonl(*(uint32_t*)&test)));
+  printf("Software says: %s\n", (char*)&hash);
+
+  // Run it on the hardware
+  BADHASH_REGISTER_MAP_INPUT_REG = htonl(*(uint32_t*)&test);
+  hash = ntohl(BADHASH_REGISTER_MAP_OUTPUT_REG);
+  printf("Hardware says: %s\n", (char*)&hash);
 
   return 0;
 }
