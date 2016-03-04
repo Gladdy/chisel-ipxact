@@ -21,7 +21,7 @@
         <spirit:volatile>true</spirit:volatile>
 
         <spirit:register>
-          <spirit:name>input_reg</spirit:name>
+          <spirit:name>Buffer</spirit:name>
           <spirit:displayName>Input value</spirit:displayName>
           <spirit:description>The input value which will be hashed.</spirit:description>
           <spirit:addressOffset>0x0</spirit:addressOffset>
@@ -41,7 +41,7 @@
         </spirit:register>
 
         <spirit:register>
-          <spirit:name>output_reg</spirit:name>
+          <spirit:name>Hasher</spirit:name>
           <spirit:displayName>Output value</spirit:displayName>
           <spirit:description>The output value equal to the badhash of the input.</spirit:description>
           <spirit:addressOffset>0x4</spirit:addressOffset>

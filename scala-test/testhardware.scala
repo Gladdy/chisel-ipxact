@@ -2,8 +2,36 @@ package TestHardware
 
 import scala.xml.XML
 import Chisel._
+import scala.reflect.runtime.{universe => ru}
 
-class BadHash extends Module {
+// class Peripheral(functionality: String) extends Module {
+class Peripheral extends Module {
+  val io = new Bundle {
+    val in_data  = UInt(INPUT, 32)
+    val write = UInt(INPUT, 1)
+    val out_data = UInt(OUTPUT, 32)
+  }
+
+  println("WARNING: Please to not initialize a bare peripheral")
+  io.out_data := UInt(1)
+}
+
+class Hasher extends Peripheral {
+  io.out_data := UInt(1337)
+}
+
+class Buffer extends Peripheral {
+  val register  = Reg(UInt())
+
+  when(io.write === UInt(1)) {
+    register := io.in_data
+    io.out_data := UInt(0)
+  }.otherwise {
+    io.out_data := register
+  }
+}
+
+class BasicBridge extends Module {
 
   var baseAddress: Int = 0
   var range: Int = 0
@@ -23,12 +51,12 @@ class BadHash extends Module {
     return registers
   }
 
-
   val io = new Bundle {
     val in_data  = UInt(INPUT, 32)
+    val write = UInt(INPUT, 1)
+    val address = UInt(INPUT, 32)
     val out_data = UInt(OUTPUT, 32)
   }
-
 
   io.out_data := UInt(0)
 
@@ -37,64 +65,86 @@ class BadHash extends Module {
   println(s"Base address: $baseAddress")
   println(s"Range: $range")
 
+  var peripherals = new Array[Peripheral](10)
+  var pc = 0
+
   for (register <- registers) {
-
-
-    val name = (register \ "displayName").text
-    println(s"Name: $name")
-
+    val name = (register \ "name").text
     val offset = (register \ "addressOffset").text.substring(2).toInt
-    println(s"Address offset: $offset")
-
     val t = (register \ "access").text
-    println(s"Type: $t")
 
+    println(s"Name: $name")
+    println(s"Address offset: $offset")
+    println(s"Type: $t")
     println("")
 
-    when(io.in_data === UInt(baseAddress + offset)) {
-      io.out_data := UInt(1)
+    println(Class.forName(name))
+
+    // peripherals(pc) = Module(new Peripheral(name))
+    peripherals(pc) = Module(new Hasher())
+
+    when(io.address === UInt(baseAddress + offset)) {
+      peripherals(pc).io.in_data := io.in_data
+      peripherals(pc).io.write := io.write
+      io.out_data := peripherals(pc).io.out_data
     }.otherwise {
-      io.out_data := UInt(0)
+      peripherals(pc).io.in_data := UInt(0)
+      peripherals(pc).io.write := UInt(0)
     }
+
+    pc = pc + 1
   }
-
-
-
-  // val running = Reg(init=UInt(0,1))
-  // val operating_register = Reg(init=UInt(0, 32))
-  //
-  // when(io.in_ready === UInt(1) && running === UInt(0)) {
-  //   // Load the value from the input if the in_ready is asserted
-  //   running := UInt(1)
-  //   operating_register := io.in_data
-  // }.elsewhen(running === UInt(1)) {
-  //
-  //   // Compute the hash and push it to the output
-  //   val x = operating_register ^ UInt(513886569);
-  //   // io.out_data := Cat(x(29,29),x(31,30), x(23,22), x(0,0), x(6,1), x(17,15), x(12,9), x(28,24), x(13,12), x(21,18), x(8,7))
-  //   io.out_data := x
-  //   io.out_ready := UInt(1)
-  //   running := UInt(0)
-  // }
 }
 
-class BadHashTest(c: BadHash) extends Tester(c) {
-  // var tot = 0
-  for (t <- 0 until 16) {
-    val in = rnd.nextInt(1000000)
-    poke(c.io.in_data, in)
+class BasicBridgeTest(c: BasicBridge) extends Tester(c) {
 
-    // step(1)
-    // if (in == 1) tot += 1
-    expect(c.io.out_data, in)
-  }
+  /*
+    TEST THE BUFFER
+  */
+  // Write to the buffer behind the BasicBridge
+  poke(c.io.in_data, 512)
+  poke(c.io.write, 1)
+  poke(c.io.address, 0)
+  step(1)
 
+  // Read from the same buffer
+  poke(c.io.write, 0)
+  poke(c.io.address, 0)
+  step(1)
+  expect(c.io.out_data, 512)
+
+  // Write other data to an invalid address
+  poke(c.io.in_data, 999)
+  poke(c.io.write, 1)
+  poke(c.io.address, 999)
+  step(1)
+
+  // Read from the same buffer (should not have changed the value 512)
+  poke(c.io.write, 0)
+  poke(c.io.address, 0)
+  step(1)
+  expect(c.io.out_data, 512)
+
+  /*
+    TEST THE (UNIMPLEMENTED) HASHER
+  */
+  // Write to the hasher behind the BasicBridge
+  poke(c.io.in_data, 512)
+  poke(c.io.write, 1)
+  poke(c.io.address, 4)
+  step(1)
+
+  // Read from the hasher
+  poke(c.io.write, 0)
+  poke(c.io.address, 4)
+  step(1)
+  expect(c.io.out_data, 1337)
 }
 
-object TestHardware {
+object TestBasicBridge {
   def main(args: Array[String]): Unit = {
     // val tutArgs = args.slice(1, args.length)
-    chiselMainTest(args, () => Module(new BadHash())) {
-      c => new BadHashTest(c) }
+    chiselMainTest(args, () => Module(new BasicBridge())) {
+      c => new BasicBridgeTest(c) }
   }
 }
