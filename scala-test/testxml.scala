@@ -9,7 +9,7 @@ object TestXML {
     // println("Full file: ")
     // println(xml)
 
-    val xml = XML.loadFile("ipxact.xml")
+    val xml = XML.loadFile("../badhash.xml")
 
     val component = (xml \\ "component")
     val addressBlock = (xml \\ "memoryMap" \ "addressBlock")

@@ -30,7 +30,7 @@ EXTRALIBS +=
 CMD=LD_LIBRARY_PATH=/usr/local/lib  $(SIM) $(DRAM_FLAGS) -cores 1 -tracelevel 0 -global-qk-ns 1 -no-caches 
 #CMD=$(SIM) $(DRAM_FLAGS) -self-starting-cores 2 -no-caches -global-qk-ns 100 -vcd-power-plot -tracelevel 1 -watch b8 +20 -tracelevel 0
 
-badhash.h: badhash.xml
+badhash.h: ../badhash.xml
 	python $(IPYXACT)/gen_c_header.py $< -o $@
 
 badhash.o: badhash.c badhash.h
