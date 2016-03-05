@@ -9,3 +9,8 @@ res = {
 
 The string "P35" (0x50333500) should return "OK!" (0x4F4B2100). This is
 assuming big-endianness. See badhash.c for a reference C implementation.
+
+The Makefile should work to run the program on the simulator. You can also just
+use gcc to build for the host machine. The Makefile needs the path to the
+ipyxact checkout in the variable IPYXACT. The default assumes the checkout is a
+sibling of the chisel-ipxact checkout.
