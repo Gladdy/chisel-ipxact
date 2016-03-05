@@ -54,8 +54,8 @@ int main(int argc, char** argv) {
   printf("Software says: %s\n", (char*)&hash);
 
   // Run it on the hardware
-  BADHASH_REGISTER_MAP_BUFFER = htonl(*(uint32_t*)&test);
-  hash = ntohl(BADHASH_REGISTER_MAP_HASHER);
+  BADHASH_REGS_BUFFER = htonl(*(uint32_t*)&test);
+  hash = ntohl(BADHASH_REGS_HASHER);
   printf("Hardware says: %s\n", (char*)&hash);
 
   printf("\n\n\n\n\n\n");

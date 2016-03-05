@@ -8,7 +8,7 @@
 
   <spirit:memoryMaps>
     <spirit:memoryMap>
-      <spirit:name>badhash_register_map</spirit:name>
+      <spirit:name>badhash_regs</spirit:name>
       <spirit:displayName>Badhash Registers</spirit:displayName>
       <spirit:addressBlock>
         <spirit:name>badhash_address_block</spirit:name>
