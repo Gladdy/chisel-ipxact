@@ -55,6 +55,8 @@ int main(int argc, char** argv) {
 
   // Run it on the hardware
   BADHASH_REGS_BUFFER = htonl(*(uint32_t*)&test);
+  BADHASH_REGS_IN_READY = 1;
+  while (!BADHASH_REGS_OUT_READY);
   hash = ntohl(BADHASH_REGS_HASHER);
   printf("Hardware says: %s\n", (char*)&hash);
 
