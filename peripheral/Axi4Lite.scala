@@ -86,6 +86,8 @@ class AXI4LiteSlave extends Module {
   val io = new Bundle {
 
     val axi = new Axi4LiteSlaveIf
+
+    var peripherals = new Array[Peripheral](10)
     // attached peripheral
     // val slaveA = new PeripheralMasterIf
     // val slaveB = new PeripheralMasterIf
@@ -144,7 +146,6 @@ class AXI4LiteSlave extends Module {
     wresp_valid := Bool(false)
   }
 
-  var peripherals = new Array[Peripheral](10)
   var pc = 0
 
   for(fname <- List("badhash_1.xml","badhash_2.xml")) {
@@ -158,7 +159,7 @@ class AXI4LiteSlave extends Module {
     val baseAddress = (addressBlock \ "baseAddress").text.substring(2).toInt
     val range = (addressBlock \ "range").text.substring(2).toInt
 
-    peripherals(pc) = Module(new Peripheral(0x7eadbeef))
+    io.peripherals(pc) = Module(new Peripheral(0x7eadbeef))
 
 
     val registers = (addressBlock \ "register")
@@ -170,23 +171,23 @@ class AXI4LiteSlave extends Module {
 
       if(access == "write-only") {
         when(waddr === UInt(address)) {
-          peripherals(pc).io.in.bits.wdata := io.axi.wchannel.bits.wdata
-          peripherals(pc).io.in.valid := io.axi.wchannel.valid
-          io.axi.wchannel.ready := peripherals(pc).io.in.ready && wvalid && !wresp_valid
+          io.peripherals(pc).io.in.bits.wdata := io.axi.wchannel.bits.wdata
+          io.peripherals(pc).io.in.valid := io.axi.wchannel.valid
+          io.axi.wchannel.ready := io.peripherals(pc).io.in.ready && wvalid && !wresp_valid
         }.otherwise {
-          peripherals(pc).io.in.bits.wdata := UInt(0x00)
-          peripherals(pc).io.in.valid := Bool(false)
+          io.peripherals(pc).io.in.bits.wdata := UInt(0x00)
+          io.peripherals(pc).io.in.valid := Bool(false)
           io.axi.wchannel.ready := Bool(false)
         }
       } else if (access == "read-only") {
         when(addr === UInt(address)) {
-          io.axi.rchannel.bits.rdata := peripherals(pc).io.out.bits.rdata
-          peripherals(pc).io.out.ready := io.axi.rchannel.ready
-          io.axi.rchannel.valid := peripherals(pc).io.out.valid && rvalid
+          io.axi.rchannel.bits.rdata := io.peripherals(pc).io.out.bits.rdata
+          io.peripherals(pc).io.out.ready := io.axi.rchannel.ready
+          io.axi.rchannel.valid := io.peripherals(pc).io.out.valid && rvalid
         }.otherwise {
-            io.axi.rchannel.bits.rdata := UInt(0x00)
-            peripherals(pc).io.out.ready := Bool(false)
-            io.axi.rchannel.valid := Bool(false)
+          io.axi.rchannel.bits.rdata := UInt(0x00)
+          io.peripherals(pc).io.out.ready := Bool(false)
+          io.axi.rchannel.valid := Bool(false)
         }
       } else {
           println("WARNING: Unsupported access mode: " + access)
