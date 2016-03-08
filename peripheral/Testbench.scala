@@ -65,13 +65,37 @@ class IPBlockTest(c: IPBlock) extends Tester(c) {
   }
 
   println("Test start")
-  read(0x00, 0x7eadbeef)
-  read(0x04, 0x0000beef)
-  write(0x08, 0x7fffffff)
-  write(0x10, 0x1)
-  read(0x04, 0x7fffffff)
-  println("Test end")
+  // read(0x00, 0x7eadbeef)
+  // read(0x08, 0x0000beef)
+  // write(0x10, 0x7fffffff)
+  // write(0x18, 0x1)
+  // read(0x08, 0x7fffffff)
 
+  //Read from the initial values
+  read(0x10, 0x7eadbeef)
+  read(0x30, 0x0000beef)
+
+  //Write to the first peripheral
+  write(0x00, 0x1337)
+  write(0x08, 0x1)
+
+  //Check that the value sticked
+  read(0x10, 0x1337)
+
+  println("Test end")
+}
+
+//Set the proper peripheral here
+class Peripheral(i: Int) extends Module {
+  val io = new badhash_interface
+
+  val out = Reg(init = UInt(i, AXI4LiteBusWidth.AXI32))
+  io.output_ready := UInt(1)
+  io.output_data := out
+
+  when (io.input_ready === UInt(1)) {
+    out := io.input_data
+  }
 }
 
 class IPBlock extends Module {
@@ -84,10 +108,8 @@ class IPBlock extends Module {
 
   s.io.axi <> io
 
-  // pa.io <> s.io.slaveA
-  // pb.io <> s.io.slaveB
-  pa.io <> s.io.slaves(0)
-  pb.io <> s.io.slaves(1)
+  pa.io <> s.io.badhash_instance
+  pb.io <> s.io.badhash_2_instance
 
 }
 
