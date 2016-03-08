@@ -58,7 +58,8 @@ int main(int argc, char** argv) {
   BADHASH_REGS_IN_READY = 1;
   while (!BADHASH_REGS_OUT_READY);
   hash = ntohl(BADHASH_REGS_HASHER);
-  printf("Hardware says: %s\n", (char*)&hash);
+  const char* res = hash == 0x4F4B2100 ? (char*)&hash : "TEST FAILED!";
+  printf("Hardware says: %s\n", res);
 
   printf("\n\n\n\n\n\n");
 
