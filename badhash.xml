@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <spirit:component xmlns:spirit="http://www.spiritconsortium.org/XMLSchema/SPIRIT/1.5" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.spiritconsortium.org/XMLSchema/SPIRIT/1.5 http://www.spiritconsortium.org/XMLSchema/SPIRIT/1.5/index.xsd">
   <spirit:vendor>uk.ac.cam.cl</spirit:vendor>
-  <!--<spirit:library>example_lib</spirit:library>-->
   <spirit:name>badhash</spirit:name>
   <spirit:version>1.0.0</spirit:version>
   <spirit:description>This component executes the badhash algorithm.</spirit:description>
@@ -31,82 +30,37 @@
           <spirit:access>write-only</spirit:access>
         </spirit:register>
 
-        <!--
         <spirit:register>
           <spirit:name>input_ready</spirit:name>
           <spirit:displayName>Input ready flag</spirit:displayName>
           <spirit:description>When this flag is raised the input will start to be processed by the peripheral</spirit:description>
-          <spirit:addressOffset>0x4</spirit:addressOffset>
+          <spirit:addressOffset>0x8</spirit:addressOffset>
           <spirit:size>32</spirit:size>
           <spirit:volatile>false</spirit:volatile>
           <spirit:access>write-only</spirit:access>
         </spirit:register>
-        -->
 
         <!-- OUTPUT (HOST <- PERIPHERAL) -->
         <spirit:register>
           <spirit:name>output_data</spirit:name>
           <spirit:displayName>Output value</spirit:displayName>
           <spirit:description>The output value equal to the badhash of the input.</spirit:description>
-          <spirit:addressOffset>0x8</spirit:addressOffset>
+          <spirit:addressOffset>0x10</spirit:addressOffset>
           <spirit:size>32</spirit:size>
           <spirit:volatile>false</spirit:volatile>
           <spirit:access>read-only</spirit:access>
         </spirit:register>
 
-<<<<<<< HEAD:scala-test/ipxact.xml
-        <!--
         <spirit:register>
           <spirit:name>output_ready</spirit:name>
           <spirit:displayName>Output ready flag</spirit:displayName>
-          <spirit:description>When this flag is raised the output_data field is ready for retrieval <spirit:description>
-          <spirit:addressOffset>0xc</spirit:addressOffset>
+          <spirit:description>When this flag is raised the output should be done</spirit:description>
+          <spirit:addressOffset>0x18</spirit:addressOffset>
           <spirit:size>32</spirit:size>
           <spirit:volatile>false</spirit:volatile>
           <spirit:access>read-only</spirit:access>
         </spirit:register>
-        -->
-=======
-        <spirit:register>
-          <spirit:name>in_ready</spirit:name>
-          <spirit:displayName>In Ready</spirit:displayName>
-          <spirit:description>Set when the the input value register is ready.</spirit:description>
-          <spirit:addressOffset>0x8</spirit:addressOffset>
-          <spirit:size>32</spirit:size>
-          <spirit:volatile>true</spirit:volatile>
-          <spirit:access>write-only</spirit:access>
-          <spirit:reset>
-            <spirit:value>0x0</spirit:value>
-            <spirit:mask>0xffffffff</spirit:mask>
-          </spirit:reset>
-          <spirit:field>
-            <spirit:name>data</spirit:name>
-            <spirit:bitOffset>0</spirit:bitOffset>
-            <spirit:bitWidth>32</spirit:bitWidth>
-            <spirit:access>write-only</spirit:access>
-          </spirit:field>
-        </spirit:register>
 
-        <spirit:register>
-          <spirit:name>out_ready</spirit:name>
-          <spirit:displayName>Out Ready</spirit:displayName>
-          <spirit:description>Set when the output register has been filled.</spirit:description>
-          <spirit:addressOffset>0xc</spirit:addressOffset>
-          <spirit:size>32</spirit:size>
-          <spirit:volatile>true</spirit:volatile>
-          <spirit:access>read-only</spirit:access>
-          <spirit:reset>
-            <spirit:value>0x0</spirit:value>
-            <spirit:mask>0xffffffff</spirit:mask>
-          </spirit:reset>
-          <spirit:field>
-            <spirit:name>data</spirit:name>
-            <spirit:bitOffset>0</spirit:bitOffset>
-            <spirit:bitWidth>32</spirit:bitWidth>
-            <spirit:access>read-only</spirit:access>
-          </spirit:field>
-        </spirit:register>
->>>>>>> f8bcfa587be92a82ab69e95d1b763175ae1fb990:badhash.xml
 
       </spirit:addressBlock>
     </spirit:memoryMap>
