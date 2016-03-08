@@ -56,20 +56,21 @@ uint64_t badhash(uint64_t x) {
 
 int main(int argc, char** argv) {
   uint64_t hash;
-  // 0x5033350050333500ULL == "P35\0P35""
+  const char* test = "P35\0P35";
+  const char* expect = "OK!\0OK!";
 
   printf("\n\n\n\n\n\n");
 
   // Run it in software
-  hash = from_big_endian_64(badhash(0x5033350050333500ULL));
+  hash = from_big_endian_64(badhash(to_big_endian_64(*(uint64_t*)test)));
   printf("Software says: %s%s\n", (char*)&hash, ((char*)&hash)+4);
 
   // Run it on the hardware
-  BADHASH_REGS_INPUT_DATA = 0x5033350050333500ULL;
+  BADHASH_REGS_INPUT_DATA = to_big_endian_64(*(uint64_t*)test);
   BADHASH_REGS_INPUT_READY = 1;
   while (!BADHASH_REGS_OUTPUT_READY);
   hash = from_big_endian_64(BADHASH_REGS_OUTPUT_DATA);
-  const char* res = hash == 0x4F4B21004F4B2100ULL ? (char*)&hash : "TEST FAILED!";
+  const char* res = hash == *(uint64_t*)expect ? (char*)&hash : "TEST FAILED!";
   printf("Hardware says: %s%s\n", res, res+4);
 
   printf("\n\n\n\n\n\n");
