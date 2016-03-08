@@ -52,6 +52,7 @@ class IPBlockTest(c: IPBlock) extends Tester(c) {
     while(peek(c.io.wchannel.ready) == 0)
       step(1)
     step(1) // ensure the wchannel valid stays for at least one clock
+    poke(c.io.awchannel.valid, false)
     poke(c.io.wchannel.valid, false)
     // check that the write response is ready
     while(peek(c.io.bchannel.valid) == 0)
@@ -61,14 +62,14 @@ class IPBlockTest(c: IPBlock) extends Tester(c) {
     poke(c.io.bchannel.ready, true)
     step(1)
     expect(peek(c.io.bchannel.valid) == 0, "write response end")
-    // test that the data have been written correctly
-    read(addr, data)
   }
 
   println("Test start")
   read(0x00, 0x7eadbeef)
   read(0x04, 0x0000beef)
-  write(0x04, 0x7fffffff)
+  write(0x08, 0x7fffffff)
+  write(0x10, 0x1)
+  read(0x04, 0x7fffffff)
   println("Test end")
 
 }
@@ -76,15 +77,17 @@ class IPBlockTest(c: IPBlock) extends Tester(c) {
 class IPBlock extends Module {
 
   val s = Module(new AXI4LiteSlave())
-  // val pa = Module(new Peripheral(0x7eadbeef))
-  // val pb = Module(new Peripheral(0x0000beef))
+  val pa = Module(new Peripheral(0x7eadbeef))
+  val pb = Module(new Peripheral(0x0000beef))
 
-  val io = new Axi4LiteSlaveIf()
+  val io = new Axi4LiteSlaveIO()
 
   s.io.axi <> io
 
   // pa.io <> s.io.slaveA
   // pb.io <> s.io.slaveB
+  pa.io <> s.io.slaves(0)
+  pb.io <> s.io.slaves(1)
 
 }
 
