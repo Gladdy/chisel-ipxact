@@ -14,22 +14,29 @@
 #include "socdam_bdoor_mapping.h"
 #endif
 
+uint32_t bswap32(uint32_t x) {
+ return  ((x << 24) & 0xff000000 ) |
+     ((x <<  8) & 0x00ff0000 ) |
+     ((x >>  8) & 0x0000ff00 ) |
+     ((x >> 24) & 0x000000ff );
+}
+
 // Can't get the library to work on the simuator so implement them here.
-uint32_t htonl(uint32_t x)
+uint64_t to_big_endian_64(uint64_t x)
 {
 #if BYTE_ORDER == LITTLE_ENDIAN
-  uint8_t* s = (uint8_t*)&x;
-  return (uint32_t)(s[0] << 24 | s[1] << 16 | s[2] << 8 | s[3]);
+  return (uint64_t)bswap32(x)
+    | ((uint64_t)bswap32((x >> 32) & 0xFFFFFFFF) << 32);
 #else
   return x;
 #endif
 }
-uint32_t ntohl(uint32_t x)
+uint64_t from_big_endian_64(uint64_t x)
 {
-  return htonl(x);
+  return to_big_endian_64(x);
 }
 
-uint32_t badhash(uint32_t x) {
+uint32_t badhash_inner(uint32_t x) {
   x ^= 0xD171A769;
   return
     ((x << 26) & 0x04000000) |
@@ -42,23 +49,29 @@ uint32_t badhash(uint32_t x) {
     ((x >>  1) & 0x60000000);
 }
 
+uint64_t badhash(uint64_t x) {
+  uint64_t res = badhash_inner((x >> 32) & 0xFFFFFFFF);
+  return (uint64_t)badhash_inner(x) | (res << 32);
+}
+
 int main(int argc, char** argv) {
-  // htonl/ntohl needed to sort byte order problems
-  char test[4] = "P35";
-  uint32_t hash;
+  uint64_t hash;
+  const char* test = "P35\0P35";
+  const char* expect = "OK!\0OK!";
 
   printf("\n\n\n\n\n\n");
 
   // Run it in software
-  hash = ntohl(badhash(htonl(*(uint32_t*)&test)));
-  printf("Software says: %s\n", (char*)&hash);
+  hash = from_big_endian_64(badhash(to_big_endian_64(*(uint64_t*)test)));
+  printf("Software says: %s%s\n", (char*)&hash, ((char*)&hash)+4);
 
   // Run it on the hardware
-  BADHASH_REGS_BUFFER = htonl(*(uint32_t*)&test);
-  BADHASH_REGS_IN_READY = 1;
-  while (!BADHASH_REGS_OUT_READY);
-  hash = ntohl(BADHASH_REGS_HASHER);
-  printf("Hardware says: %s\n", (char*)&hash);
+  BADHASH_REGS_INPUT_DATA = to_big_endian_64(*(uint64_t*)test);
+  BADHASH_REGS_INPUT_READY = 1;
+  while (!BADHASH_REGS_OUTPUT_READY);
+  hash = from_big_endian_64(BADHASH_REGS_OUTPUT_DATA);
+  const char* res = hash == *(uint64_t*)expect ? (char*)&hash : "TEST FAILED!";
+  printf("Hardware says: %s%s\n", res, res+4);
 
   printf("\n\n\n\n\n\n");
 

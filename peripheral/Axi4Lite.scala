@@ -190,7 +190,7 @@ class AXI4LiteSlave extends Module {
           io.axi.rchannel.valid := Bool(false)
         }
       } else {
-          println("WARNING: Unsupported access mode: " + access)
+        println("WARNING: Unsupported access mode: " + access)
       }
     }
 
