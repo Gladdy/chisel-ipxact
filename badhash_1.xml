@@ -14,7 +14,7 @@
         <spirit:displayName>Badhash Address Block</spirit:displayName>
         <spirit:description>This Address block contains all the registers needed to interact with the badhash device.</spirit:description>
         <spirit:baseAddress>0x0</spirit:baseAddress>
-        <spirit:range>0x10</spirit:range>
+        <spirit:range>0x20</spirit:range>
         <spirit:width>32</spirit:width>
         <spirit:usage>register</spirit:usage>
         <spirit:volatile>true</spirit:volatile>
