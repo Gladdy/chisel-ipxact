@@ -76,15 +76,15 @@ class IPBlockTest(c: IPBlock) extends Tester(c) {
 class IPBlock extends Module {
 
   val s = Module(new AXI4LiteSlave())
-  val pa = Module(new Peripheral(0x7eadbeef))
-  val pb = Module(new Peripheral(0x0000beef))
+  // val pa = Module(new Peripheral(0x7eadbeef))
+  // val pb = Module(new Peripheral(0x0000beef))
 
   val io = new Axi4LiteSlaveIf()
 
   s.io.axi <> io
 
-  pa.io <> s.io.slaveA
-  pb.io <> s.io.slaveB
+  // pa.io <> s.io.slaveA
+  // pb.io <> s.io.slaveB
 
 }
 

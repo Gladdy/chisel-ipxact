@@ -4,31 +4,48 @@ import scala.xml.XML
 import Chisel._
 import scala.reflect.runtime.{universe => ru}
 
-// class Peripheral(functionality: String) extends Module {
-class Peripheral extends Module {
-  val io = new Bundle {
-    val in_data  = UInt(INPUT, 32)
-    val write = UInt(INPUT, 1)
-    val out_data = UInt(OUTPUT, 32)
-  }
 
-  println("WARNING: Please to not initialize a bare peripheral")
-  io.out_data := UInt(1)
+object AXI4LiteBusWidth {
+  val AXI32 = 32
+  val AXI64 = 64
 }
 
+class PeripheralSlaveIf extends Bundle {
+    val in = Decoupled(new Bundle {
+      val wdata = UInt(INPUT, AXI4LiteBusWidth.AXI32)
+    }).flip()
+
+    val out = Decoupled(new Bundle {
+      val rdata = UInt(OUTPUT, AXI4LiteBusWidth.AXI32)
+    })
+}
+
+
+class Peripheral extends Module {
+  val io = new PeripheralSlaveIf
+
+  println("WARNING: Please to not initialize a bare peripheral")
+  io.out.valid := Bool(true)
+  io.out.bits.rdata := UInt("hdeadbeef") //Undefined value
+}
+
+
+
 class Hasher extends Peripheral {
-  io.out_data := UInt(1337)
+  io.out.valid := Bool(true)
+  io.out.bits.rdata := UInt("hdeadbeef")
 }
 
 class Buffer extends Peripheral {
-  val register  = Reg(UInt())
+  val reg = Reg(init = UInt(0, AXI4LiteBusWidth.AXI32))
 
-  when(io.write === UInt(1)) {
-    register := io.in_data
-    io.out_data := UInt(0)
-  }.otherwise {
-    io.out_data := register
+  //Update the register when the input is ready
+  when(io.in.ready) {
+    reg := io.in.bits.wdata
   }
+
+  io.out.valid := Bool(True)
+  io.out.bits.rdata := reg
 }
 
 class BasicBridge extends Module {
@@ -51,6 +68,19 @@ class BasicBridge extends Module {
     return registers
   }
 
+  def getObjectInstance(clsName: String): ModuleMirror = {
+    val mirror = runtimeMirror(getClass.getClassLoader)
+    val module = mirror.staticModule(clsName)
+    return mirror.reflectModule(module).instance
+  }
+
+  def getClassInstance(clsName: String): Any = {
+    val mirror = runtimeMirror(getClass.getClassLoader)
+    val cls = mirror.classSymbol(Class.forName(clsName))
+    val module = cls.companionSymbol.asModule
+    return mirror.reflectModule(module).instance
+  }
+
   val io = new Bundle {
     val in_data  = UInt(INPUT, 32)
     val write = UInt(INPUT, 1)
@@ -71,17 +101,36 @@ class BasicBridge extends Module {
   for (register <- registers) {
     val name = (register \ "name").text
     val offset = (register \ "addressOffset").text.substring(2).toInt
-    val t = (register \ "access").text
+    val access = (register \ "access").text
 
     println(s"Name: $name")
     println(s"Address offset: $offset")
-    println(s"Type: $t")
+    println(s"Access: $access")
     println("")
 
-    println(Class.forName(name))
-
+    // Yay reflection
+    // println(Class.forName(name))
     // peripherals(pc) = Module(new Peripheral(name))
-    peripherals(pc) = Module(new Hasher())
+    // val obj: Peripheral = new getClassInstance("Hasher")
+
+    peripherals(pc) = Module(new Buffer())
+
+    if(access == "write-only") {
+      when(io.address === UInt(baseAddress + offset)) {
+        peripherals(pc).in.bits.wdata := in_data
+        peripherals(pc).in.bits.wdata := in_data
+
+
+        // io.slaveA.in.bits.wdata := io.axi.wchannel.bits.wdata
+        // io.slaveA.in.valid := io.axi.wchannel.valid
+        // io.axi.wchannel.ready := io.slaveA.in.ready && wvalid && !wresp_valid
+
+      }
+    } else if (access == "read-only") {
+
+    } else {
+        println("WARNING: Unsupported access mode: " + access)
+    }
 
     when(io.address === UInt(baseAddress + offset)) {
       peripherals(pc).io.in_data := io.in_data
@@ -142,7 +191,7 @@ class BasicBridgeTest(c: BasicBridge) extends Tester(c) {
 }
 
 object TestBasicBridge {
-  def main(args: Array[String]): Unit = {
+  def nomain(args: Array[String]): Unit = {
     // val tutArgs = args.slice(1, args.length)
     chiselMainTest(args, () => Module(new BasicBridge())) {
       c => new BasicBridgeTest(c) }

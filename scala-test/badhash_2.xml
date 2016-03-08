@@ -4,7 +4,7 @@
   <!--<spirit:library>example_lib</spirit:library>-->
   <spirit:name>badhash</spirit:name>
   <spirit:version>1.0.0</spirit:version>
-  <spirit:description>This component executes the badhash algorithm.</spirit:description>
+  <spirit:description>This is the second bad hasher block.</spirit:description>
 
   <spirit:memoryMaps>
     <spirit:memoryMap>
@@ -14,7 +14,7 @@
         <spirit:name>badhash_address_block</spirit:name>
         <spirit:displayName>Badhash Address Block</spirit:displayName>
         <spirit:description>This Address block contains all the registers needed to interact with the badhash device.</spirit:description>
-        <spirit:baseAddress>0x0</spirit:baseAddress>
+        <spirit:baseAddress>0x10</spirit:baseAddress>
         <spirit:range>0x10</spirit:range>
         <spirit:width>32</spirit:width>
         <spirit:usage>register</spirit:usage>

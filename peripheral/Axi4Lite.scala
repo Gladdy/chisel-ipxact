@@ -1,6 +1,8 @@
 package cam.cl.chiselipxact;
 
 import Chisel._;
+import scala.xml.XML
+  import scala.reflect.runtime.{universe => ru}
 
 object AXI4LiteBusWidth {
   val AXI32 = 32
@@ -85,13 +87,11 @@ class AXI4LiteSlave extends Module {
 
     val axi = new Axi4LiteSlaveIf
     // attached peripheral
-    val slaveA = new PeripheralMasterIf
-    val slaveB = new PeripheralMasterIf
-
+    // val slaveA = new PeripheralMasterIf
+    // val slaveB = new PeripheralMasterIf
   }
 
   /* handle read address channel for multiplexing */
-
   // cached address
   val addr = Reg(init = UInt(0, AXI4LiteBusWidth.AXI32))
   // read ok after address has been set
@@ -100,7 +100,7 @@ class AXI4LiteSlave extends Module {
   io.axi.archannel.ready := ! rvalid
 
   // set address when it becomes valid
-  when (io.axi.archannel.valid && io.axi.archannel.ready) { 
+  when (io.axi.archannel.valid && io.axi.archannel.ready) {
     addr := io.axi.archannel.bits.araddr
     rvalid := Bool(true)
   }
@@ -120,7 +120,7 @@ class AXI4LiteSlave extends Module {
   io.axi.awchannel.ready := ! wvalid
 
   // set address when it becomes valid
-  when (io.axi.awchannel.valid && io.axi.awchannel.ready) { 
+  when (io.axi.awchannel.valid && io.axi.awchannel.ready) {
     addr := io.axi.awchannel.bits.awaddr
     wvalid := Bool(true)
   }
@@ -144,54 +144,103 @@ class AXI4LiteSlave extends Module {
     wresp_valid := Bool(false)
   }
 
-  /* forward read channel */
+  var peripherals = new Array[Peripheral](10)
+  var pc = 0
 
-  when (addr === UInt(0x00)) {
-    io.axi.rchannel.bits.rdata := io.slaveA.out.bits.rdata
-    io.slaveA.out.ready := io.axi.rchannel.ready
-    io.axi.rchannel.valid := io.slaveA.out.valid && rvalid
+  for(fname <- List("badhash_1.xml","badhash_2.xml")) {
 
-    io.slaveB.out.ready := Bool(false)
+    val xml = XML.loadFile(fname)
+    val component = (xml \\ "component")
+    val addressBlock = (xml \\ "memoryMap" \ "addressBlock")
 
-  } .elsewhen (addr === UInt(0x04)) {
-    io.axi.rchannel.bits.rdata := io.slaveB.out.bits.rdata
-    io.slaveB.out.ready := io.axi.rchannel.ready
-    io.axi.rchannel.valid := io.slaveB.out.valid && rvalid
+    val name = (component \ "name").text
+    val desc = (component \ "description").text
+    val baseAddress = (addressBlock \ "baseAddress").text.substring(2).toInt
+    val range = (addressBlock \ "range").text.substring(2).toInt
 
-    io.slaveA.out.ready := Bool(false)
+    peripherals(pc) = Module(new Peripheral(0x7eadbeef))
 
-  } .otherwise {
-    io.axi.rchannel.bits.rdata := UInt(0x00)
-    io.slaveA.out.ready := Bool(false)
-    io.slaveB.out.ready := Bool(false)
-    io.axi.rchannel.valid := Bool(false)
+
+    val registers = (addressBlock \ "register")
+    for (register <- registers) {
+      val name = (register \ "displayName").text
+      val address = (register \ "addressOffset").text.substring(2).toInt + baseAddress
+      val access = (register \ "access").text
+
+
+      if(access == "write-only") {
+        when(waddr === UInt(address)) {
+          peripherals(pc).io.in.bits.wdata := io.axi.wchannel.bits.wdata
+          peripherals(pc).io.in.valid := io.axi.wchannel.valid
+          io.axi.wchannel.ready := peripherals(pc).io.in.ready && wvalid && !wresp_valid
+        }.otherwise {
+          peripherals(pc).io.in.bits.wdata := UInt(0x00)
+          peripherals(pc).io.in.valid := Bool(false)
+          io.axi.wchannel.ready := Bool(false)
+        }
+      } else if (access == "read-only") {
+        when(addr === UInt(address)) {
+          io.axi.rchannel.bits.rdata := peripherals(pc).io.out.bits.rdata
+          peripherals(pc).io.out.ready := io.axi.rchannel.ready
+          io.axi.rchannel.valid := peripherals(pc).io.out.valid && rvalid
+        }.otherwise {
+            io.axi.rchannel.bits.rdata := UInt(0x00)
+            peripherals(pc).io.out.ready := Bool(false)
+            io.axi.rchannel.valid := Bool(false)
+        }
+      } else {
+          println("WARNING: Unsupported access mode: " + access)
+      }
+    }
+
+    pc = pc + 1
   }
-
-  /* forward write channel */
-
-  when (addr === UInt(0x00)) {
-    io.slaveA.in.bits.wdata := io.axi.wchannel.bits.wdata
-    io.slaveA.in.valid := io.axi.wchannel.valid
-    io.axi.wchannel.ready := io.slaveA.in.ready && wvalid && !wresp_valid
-
-    io.slaveB.in.valid := Bool(false)
-    io.slaveB.in.bits.wdata := UInt(0x00)
-
-  } .elsewhen (addr === UInt(0x04)) {
-    io.slaveB.in.bits.wdata := io.axi.wchannel.bits.wdata
-    io.slaveB.in.valid := io.axi.wchannel.valid
-    io.axi.wchannel.ready := io.slaveB.in.ready && wvalid && !wresp_valid
-
-    io.slaveA.in.valid := Bool(false)
-    io.slaveA.in.bits.wdata := UInt(0x00)
-
-  } .otherwise {
-    io.slaveA.in.bits.wdata := UInt(0x00)
-    io.slaveB.in.bits.wdata := UInt(0x00)
-    io.slaveA.in.valid := Bool(false)
-    io.slaveB.in.valid := Bool(false)
-    io.axi.wchannel.ready := Bool(false)
-  }
-
 
 }
+  // /* forward read channel */
+  // when (addr === UInt(0x00)) {
+  //   io.axi.rchannel.bits.rdata := io.slaveA.out.bits.rdata
+  //   io.slaveA.out.ready := io.axi.rchannel.ready
+  //   io.axi.rchannel.valid := io.slaveA.out.valid && rvalid
+  //
+  //   io.slaveB.out.ready := Bool(false)
+  //
+  // } .elsewhen (addr === UInt(0x04)) {
+  //   io.axi.rchannel.bits.rdata := io.slaveB.out.bits.rdata
+  //   io.slaveB.out.ready := io.axi.rchannel.ready
+  //   io.axi.rchannel.valid := io.slaveB.out.valid && rvalid
+  //
+  //   io.slaveA.out.ready := Bool(false)
+  //
+  // } .otherwise {
+  //   io.axi.rchannel.bits.rdata := UInt(0x00)
+  //   io.slaveA.out.ready := Bool(false)
+  //   io.slaveB.out.ready := Bool(false)
+  //   io.axi.rchannel.valid := Bool(false)
+  // }
+  //
+  // /* forward write channel */
+  //
+  // when (addr === UInt(0x00)) {
+  //   io.slaveA.in.bits.wdata := io.axi.wchannel.bits.wdata
+  //   io.slaveA.in.valid := io.axi.wchannel.valid
+  //   io.axi.wchannel.ready := io.slaveA.in.ready && wvalid && !wresp_valid
+  //
+  //   io.slaveB.in.valid := Bool(false)
+  //   io.slaveB.in.bits.wdata := UInt(0x00)
+  //
+  // } .elsewhen (addr === UInt(0x04)) {
+  //   io.slaveB.in.bits.wdata := io.axi.wchannel.bits.wdata
+  //   io.slaveB.in.valid := io.axi.wchannel.valid
+  //   io.axi.wchannel.ready := io.slaveB.in.ready && wvalid && !wresp_valid
+  //
+  //   io.slaveA.in.valid := Bool(false)
+  //   io.slaveA.in.bits.wdata := UInt(0x00)
+  //
+  // } .otherwise {
+  //   io.slaveA.in.bits.wdata := UInt(0x00)
+  //   io.slaveB.in.bits.wdata := UInt(0x00)
+  //   io.slaveA.in.valid := Bool(false)
+  //   io.slaveB.in.valid := Bool(false)
+  //   io.axi.wchannel.ready := Bool(false)
+  // }
