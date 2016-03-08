@@ -54,10 +54,10 @@ int main(int argc, char** argv) {
   printf("Software says: %s\n", (char*)&hash);
 
   // Run it on the hardware
-  BADHASH_REGS_BUFFER = htonl(*(uint32_t*)&test);
-  BADHASH_REGS_IN_READY = 1;
-  while (!BADHASH_REGS_OUT_READY);
-  hash = ntohl(BADHASH_REGS_HASHER);
+  BADHASH_REGS_INPUT_DATA = htonl(*(uint32_t*)&test);
+  BADHASH_REGS_INPUT_READY = 1;
+  while (!BADHASH_REGS_OUTPUT_READY);
+  hash = ntohl(BADHASH_REGS_OUTPUT_DATA);
   const char* res = hash == 0x4F4B2100 ? (char*)&hash : "TEST FAILED!";
   printf("Hardware says: %s\n", res);
 

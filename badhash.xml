@@ -13,9 +13,9 @@
         <spirit:name>badhash_address_block</spirit:name>
         <spirit:displayName>Badhash Address Block</spirit:displayName>
         <spirit:description>This Address block contains all the registers needed to interact with the badhash device.</spirit:description>
-        <spirit:baseAddress>0x0</spirit:baseAddress>
-        <spirit:range>0x10</spirit:range>
-        <spirit:width>32</spirit:width>
+        <spirit:baseAddress>0xF8008000</spirit:baseAddress>
+        <spirit:range>0x1000</spirit:range>
+        <spirit:width>64</spirit:width>
         <spirit:usage>register</spirit:usage>
         <spirit:volatile>true</spirit:volatile>
 
@@ -25,7 +25,7 @@
           <spirit:displayName>Input value</spirit:displayName>
           <spirit:description>The input value which will be hashed.</spirit:description>
           <spirit:addressOffset>0x0</spirit:addressOffset>
-          <spirit:size>32</spirit:size>
+          <spirit:size>64</spirit:size>
           <spirit:volatile>false</spirit:volatile>
           <spirit:access>write-only</spirit:access>
         </spirit:register>
@@ -35,7 +35,7 @@
           <spirit:displayName>Input ready flag</spirit:displayName>
           <spirit:description>When this flag is raised the input will start to be processed by the peripheral</spirit:description>
           <spirit:addressOffset>0x8</spirit:addressOffset>
-          <spirit:size>32</spirit:size>
+          <spirit:size>64</spirit:size>
           <spirit:volatile>false</spirit:volatile>
           <spirit:access>write-only</spirit:access>
         </spirit:register>
@@ -46,7 +46,7 @@
           <spirit:displayName>Output value</spirit:displayName>
           <spirit:description>The output value equal to the badhash of the input.</spirit:description>
           <spirit:addressOffset>0x10</spirit:addressOffset>
-          <spirit:size>32</spirit:size>
+          <spirit:size>64</spirit:size>
           <spirit:volatile>false</spirit:volatile>
           <spirit:access>read-only</spirit:access>
         </spirit:register>
@@ -56,7 +56,7 @@
           <spirit:displayName>Output ready flag</spirit:displayName>
           <spirit:description>When this flag is raised the output should be done</spirit:description>
           <spirit:addressOffset>0x18</spirit:addressOffset>
-          <spirit:size>32</spirit:size>
+          <spirit:size>64</spirit:size>
           <spirit:volatile>false</spirit:volatile>
           <spirit:access>read-only</spirit:access>
         </spirit:register>
