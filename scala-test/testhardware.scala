@@ -90,7 +90,7 @@ class BasicBridge extends Module {
 
   io.out_data := UInt(0)
 
-  val registers = getRegisters("ipxact.xml")
+  val registers = getRegisters("../badhash.xml")
   println(s"Name: $component_name")
   println(s"Base address: $baseAddress")
   println(s"Range: $range")

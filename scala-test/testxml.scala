@@ -8,9 +8,13 @@ object TestXML {
 
     for(fname <- args) {
 
+<<<<<<< HEAD
       val xml = XML.loadFile(fname)
       val component = (xml \\ "component")
       val addressBlock = (xml \\ "memoryMap" \ "addressBlock")
+=======
+    val xml = XML.loadFile("../badhash.xml")
+>>>>>>> f8bcfa587be92a82ab69e95d1b763175ae1fb990
 
       val name = (component \ "name").text
       val desc = (component \ "description").text

@@ -8,7 +8,7 @@
 
   <spirit:memoryMaps>
     <spirit:memoryMap>
-      <spirit:name>badhash_register_map</spirit:name>
+      <spirit:name>badhash_regs</spirit:name>
       <spirit:displayName>Badhash Registers</spirit:displayName>
       <spirit:addressBlock>
         <spirit:name>badhash_address_block</spirit:name>
@@ -54,6 +54,7 @@
           <spirit:access>read-only</spirit:access>
         </spirit:register>
 
+<<<<<<< HEAD:scala-test/ipxact.xml
         <!--
         <spirit:register>
           <spirit:name>output_ready</spirit:name>
@@ -65,6 +66,47 @@
           <spirit:access>read-only</spirit:access>
         </spirit:register>
         -->
+=======
+        <spirit:register>
+          <spirit:name>in_ready</spirit:name>
+          <spirit:displayName>In Ready</spirit:displayName>
+          <spirit:description>Set when the the input value register is ready.</spirit:description>
+          <spirit:addressOffset>0x8</spirit:addressOffset>
+          <spirit:size>32</spirit:size>
+          <spirit:volatile>true</spirit:volatile>
+          <spirit:access>write-only</spirit:access>
+          <spirit:reset>
+            <spirit:value>0x0</spirit:value>
+            <spirit:mask>0xffffffff</spirit:mask>
+          </spirit:reset>
+          <spirit:field>
+            <spirit:name>data</spirit:name>
+            <spirit:bitOffset>0</spirit:bitOffset>
+            <spirit:bitWidth>32</spirit:bitWidth>
+            <spirit:access>write-only</spirit:access>
+          </spirit:field>
+        </spirit:register>
+
+        <spirit:register>
+          <spirit:name>out_ready</spirit:name>
+          <spirit:displayName>Out Ready</spirit:displayName>
+          <spirit:description>Set when the output register has been filled.</spirit:description>
+          <spirit:addressOffset>0xc</spirit:addressOffset>
+          <spirit:size>32</spirit:size>
+          <spirit:volatile>true</spirit:volatile>
+          <spirit:access>read-only</spirit:access>
+          <spirit:reset>
+            <spirit:value>0x0</spirit:value>
+            <spirit:mask>0xffffffff</spirit:mask>
+          </spirit:reset>
+          <spirit:field>
+            <spirit:name>data</spirit:name>
+            <spirit:bitOffset>0</spirit:bitOffset>
+            <spirit:bitWidth>32</spirit:bitWidth>
+            <spirit:access>read-only</spirit:access>
+          </spirit:field>
+        </spirit:register>
+>>>>>>> f8bcfa587be92a82ab69e95d1b763175ae1fb990:badhash.xml
 
       </spirit:addressBlock>
     </spirit:memoryMap>

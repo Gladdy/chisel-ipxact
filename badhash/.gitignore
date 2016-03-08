@@ -1,0 +1,5 @@
+badhash
+badhash.h
+*.s
+*.txt
+*.dis
